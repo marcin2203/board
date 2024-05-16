@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  db: 
+    image: psqldb
+    build: .
+    container_name: db
+    environment:
+      - POSTGRES_DB=db
+      - POSTGRES_HOST_AUTH_METHOD=trust
+      - POSTGRES_USER=ps
+      - POSTGRES_PASSWORD=1234
+    ports:
+      - 5432:5432

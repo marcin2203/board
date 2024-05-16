@@ -1,0 +1,11 @@
+inline{
+    display: inline-block;
+}
+body{
+    background-color: rgb(255, 255, 255);
+}
+#logo{
+display: flex; /* Ustawienie kontenera na flexbox */
+justify-content: center; /* Wyśrodkowanie zawartości wzdłuż osi X */
+align-items: center; /* Wyśrodkowanie zawartości wzdłuż osi Y */
+}

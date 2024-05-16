@@ -1,0 +1,63 @@
+package views
+
+import "fmt"
+
+templ createPost(url string){
+    <style>
+    section {
+        transition: background-color 0.3s ease; /* Dodaj płynny efekt zmiany koloru tła */
+    }
+    section:hover {
+        background-color: #f5f5f5;
+    }
+    </style>
+    <section>
+    <h2>This is a section</h2>
+    <p>Some content will go here, which will be inside your section.</p>
+    <i style="color: gray">
+        <span style="float: left;">autor: Mocarz</span>
+        <a style="float: right;" href={ templ.URL(url) }>👉 więcej</a>
+    </i>
+    </section>
+}
+
+templ posts(){
+    <div>
+    for i := 0; i < 10; i++ {
+        
+        @createPost(fmt.Sprint("http://localhost:2000/post/", i))
+    }
+    @rerutnTop()
+    </div>
+}
+templ rerutnTop(){
+    <p>
+        <a href="#top" style="float: middle; margin-left: 50%; transform: translateX(-50%);">👆 Góra</a>
+        <span style="float: left;">Coś</span>
+    </p>
+}
+
+templ ShowTag(){
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        <link rel="stylesheet" href="https://cdn.simplecss.org/simple.min.css"/>
+        <script src="https://unpkg.com/htmx.org@1.9.12"></script>
+        <title>Board</title>
+    </head>
+    <body>
+        <header>
+            <h1>Board</h1>
+            <hr/>
+            @Nav()
+        </header>
+        <main>
+            @SearchBar()
+            @posts()
+        </main>
+        
+    </body>
+    </html>
+}

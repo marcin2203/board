@@ -1,0 +1,33 @@
+package views
+
+templ ShowProfile(user string){
+<!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        <link rel="stylesheet" href="https://cdn.simplecss.org/simple.min.css"></link>
+        <script src="https://unpkg.com/htmx.org@1.9.12"/>
+        <title>Board</title>
+    </head>
+    <body>
+        <header >
+            <h1>Board</h1>
+            <hr/>
+            @Nav()
+        </header>
+        <main>
+            <p>Profil: {user}</p>
+            <section>
+                <h3>🔧 Ustawienia 🔨</h3>
+                <div>
+                    <button>
+                        Zmień dane 🤔
+                    </button>
+                </div>
+            </section>
+        </main>
+        
+    </body>
+    </html>
+}

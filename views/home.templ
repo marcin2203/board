@@ -1,0 +1,98 @@
+package views
+
+templ Nav(){
+    <nav style="padding: 0 0rem 0rem;">
+    <a href="/main-page">Home</a>
+    <a href="/tag">Tags</a>
+    <a href="/profile">Profile</a>
+    <a href="/info">Info</a>
+    </nav>
+}
+
+templ SearchBar(){
+<div>
+        <input class="form-control" type="search"
+            name="search" placeholder="Type tags you are intrested..."
+            hx-post="/"
+            hx-trigger="input changed delay:500ms, search"
+            hx-target="#search-results"
+            hx-indicator=".htmx-indicator"
+            style="width: 600px;"></input>
+        <table class="table">
+            <thead>
+            <tr>
+                <th>tags</th>
+            </tr>
+            </thead>
+            <tbody id="search-results">
+            </tbody>
+        </table>
+    </div>
+}
+
+templ ShowHome(){
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        <link rel="stylesheet" href="board/mystyle.css"/>
+        <link rel="stylesheet" href="https://cdn.simplecss.org/simple.min.css"/>
+        <script src="https://unpkg.com/htmx.org@1.9.12"></script>
+        <title>Board</title>
+        <style>
+            .container {
+        display: flex; /* Ustawia kontener na flexbox */
+        }
+        .column {
+            font-size:
+            border: 1px solid #ccc; /* Dodaje obramowanie dla kolumn */
+            margin: 0 10px; /* Dodaje marginesy między kolumnami */
+        }
+        .main {
+            flex: 80%; /* Ustawia pierwszą kolumnę na 80% szerokości */
+        }
+        .aux {
+            font-size: 12px;
+            flex: 20%; /* Ustawia drugą kolumnę na 20% szerokości */
+        }
+        </style>
+    </head>
+    <body>
+        <header>
+            <h1> <img src="img"/> Board</h1>
+            <hr/>
+            @Nav()
+        </header>
+        <main>
+            @SearchBar()
+            <div class="container">
+                <div class="main column">
+                    <h2>Kolumna 1</h2>
+                    <p>To jest zawartość kolumny 1.</p>
+                </div>
+                <div class="aux column">
+                    <b style="text-align: center;">Admin 👑</b>
+                    <hr/>
+                    <form action="http://localhost:2000/login" method="post">
+                        <label for="input_email">Email:</label><br/>
+                        <input type="text" id="input_email" name="input_email"></input><br/>
+                        <label for="input_password">Password:</label><br/>
+                        <input type="password" id="input_password" name="input_password"></input><br/>
+                        <input type="submit" value="Wyślij"/>
+                    </form>
+                    <hr/>
+                    <form action="http://localhost:2000/register" method="post">
+                        <label for="input_email">Email:</label><br/>
+                        <input type="text" id="input_email" name="input_email"></input><br/>
+                        <label for="input_password">Password:</label><br/>
+                        <input type="password" id="input_password" name="input_password"></input><br/>
+                        <input type="submit" value="Wyślij"/>
+                    </form>
+                </div>
+            </div>
+        </main>
+
+    </body>
+    </html>
+}
