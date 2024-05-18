@@ -1,0 +1,80 @@
+package views
+
+import "fmt"
+templ CreateTagPost(url string, author string, content string){
+    <style>
+    section {
+        transition: background-color 0.3s ease; /* Dodaj płynny efekt zmiany koloru tła */
+    }
+    section:hover {
+        background-color: #f5f5f5;
+    }
+    </style>
+    <section>
+        <h2>This is a section</h2>
+        <p>{ content }</p>
+        <i style="color: gray">
+            <span style="float: left;">autor: { author }</span>
+            <a style="float: right;" href={ templ.URL(url) }>👉 więcej</a>
+        </i>
+    </section>
+}
+templ CreateFullPost(content string, author string){
+    <style>
+    section {
+        transition: background-color 0.3s ease; /* Dodaj płynny efekt zmiany koloru tła */
+    }
+    section:hover {
+        background-color: #f5f5f5;
+    }
+    </style>
+    <section>
+        <h2>This is a section</h2>
+        <p>{ content }</p>
+        <i style="color: gray">
+            <span style="float: left;">autor: { author }</span>
+            <span style="float: right;">2024-06-12</span>
+        </i>
+    </section>
+}
+templ CreateComment(content string, author string){
+    <section style="margin: 1rem 0;padding: 1rem 1rem; font-size: 0.9rem;">
+        <p>
+            {content}
+        </p>
+        <i>author: { author }</i>
+    </section>
+}
+
+templ tagposts(ids []int, authors []string, contents []string){
+    <div>
+    for i := 0; i < len(ids); i++ {
+        @CreateTagPost(fmt.Sprint("http://localhost:1000/post/", ids[i]), authors[i], contents[i])
+    }
+    @rerutnTop()
+    </div>
+}
+
+templ ShowFullPost(content, author string){
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        <link rel="stylesheet" href="https://cdn.simplecss.org/simple.min.css"/>
+        <script src="https://unpkg.com/htmx.org@1.9.12"/>
+        <title>Board</title>
+    </head>
+    <body>
+        <header>
+            <h1>Board</h1>
+            <hr/>
+            @Nav()
+        </header>
+        <main>
+            @CreateFullPost(content, author)
+        </main>
+        
+    </body>
+    </html>
+}

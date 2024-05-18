@@ -2,8 +2,50 @@ inline{
     display: inline-block;
 }
 body{
-    background-color: rgb(255, 255, 255);
+    background-color: rgb(240, 240, 240);
 }
+section{
+    background-color: rgb(243, 243, 238); 
+}
+section:hover{
+    background-color: rgb(241, 239, 216); 
+}
+.tooltip {
+    position: relative;
+    display: inline-block;
+    border-bottom: 1px dotted black;
+  }
+  
+  .tooltip .tooltiptext {
+    visibility: hidden;
+    width: 120px;
+    background-color: black;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px 0;
+  
+    /* Position the tooltip */
+    position: absolute;
+    z-index: 1;
+  }
+  
+  .tooltip:hover .tooltiptext {
+    visibility: visible;
+  }
+  .tooltip .tooltiptext {
+    top: -5px;
+    left: 105%;
+  }
+  .tooltip .tooltiptext {
+    top: -5px;
+    right: 105%;
+  }
+  /* Show the tooltip text when you mouse over the tooltip container */
+.section:hover .tooltiptext {
+    visibility: visible;
+  }
+
 #logo{
 display: flex; /* Ustawienie kontenera na flexbox */
 justify-content: center; /* Wyśrodkowanie zawartości wzdłuż osi X */
