@@ -10,7 +10,7 @@ import "context"
 import "io"
 import "bytes"
 
-func ShowProfile(user string) templ.Component {
+func ChangeForm() templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templ_7745c5c3_W.(*bytes.Buffer)
 		if !templ_7745c5c3_IsBuffer {
@@ -21,6 +21,54 @@ func ShowProfile(user string) templ.Component {
 		templ_7745c5c3_Var1 := templ.GetChildren(ctx)
 		if templ_7745c5c3_Var1 == nil {
 			templ_7745c5c3_Var1 = templ.NopComponent
+		}
+		ctx = templ.ClearChildren(ctx)
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<style>\r\n        .form-container {\r\n            margin-top: 20px;\r\n        }\r\n        .hidden {\r\n            display: none;\r\n        }\r\n    </style><div id=\"form-container\" class=\"hidden\"><form id=\"change-form\"><div><h4>Ustawienia</h4><label><input type=\"checkbox\" id=\"emailCheckbox\"> Email\r</label> <label><input type=\"checkbox\" id=\"passwordCheckbox\"> Password\r</label> <label><input type=\"checkbox\" id=\"nicknameCheckbox\"> Nickname\r</label> <textarea id=\"credentials\" name=\"credentials\" required></textarea></div><div><button type=\"button\" onclick=\"sendChanges()\">Zapisz zmiany</button></div><script>\r\n            function sendChanges() {\r\n                // Pobierz wartość z pola \"credentials\"\r\n                var chcredentials = document.getElementById(\"credentials\").value;\r\n\r\n                // Sprawdź stan zaznaczenia checkboxów\r\n                var emailcheck = document.getElementById(\"emailCheckbox\").checked;\r\n                var passwordcheck = document.getElementById(\"passwordCheckbox\").checked;\r\n                var nicknamecheck = document.getElementById(\"nicknameCheckbox\").checked;\r\n                // Utwórz obiekt change\r\n                var change = {\r\n                    credentials: chcredentials,\r\n                    target: \"\"\r\n                };\r\n\r\n                // Ustaw właściwość \"target\" w zależności od stanu zaznaczenia checkboxów\r\n                if (emailcheck) {\r\n                    change.target = \"email\";\r\n                } else if (passwordcheck) {\r\n                    change.target = \"password\";\r\n                } else if (nicknamecheck) {\r\n                    change.target = \"nickname\";\r\n                }\r\n\r\n\r\n                // Przekształć obiekt change na JSON\r\n                var sendvars = JSON.stringify(change);\r\n\r\n                // Wyślij żądanie POST za pomocą Fetch API\r\n                fetch('http://localhost:1000/user', {\r\n                    method: 'POST',\r\n                    headers: {\r\n                        'Content-Type': 'application/json'\r\n                    },\r\n                    body: sendvars\r\n                })\r\n                .then(response => response.json())\r\n                .then(data => console.log('Success:', data))\r\n                .catch(error => console.error('Error:', error));\r\n            }\r\n            </script></form></div>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		if !templ_7745c5c3_IsBuffer {
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteTo(templ_7745c5c3_W)
+		}
+		return templ_7745c5c3_Err
+	})
+}
+
+func CreatePostForm() templ.Component {
+	return templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
+		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templ_7745c5c3_W.(*bytes.Buffer)
+		if !templ_7745c5c3_IsBuffer {
+			templ_7745c5c3_Buffer = templ.GetBuffer()
+			defer templ.ReleaseBuffer(templ_7745c5c3_Buffer)
+		}
+		ctx = templ.InitializeContext(ctx)
+		templ_7745c5c3_Var2 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var2 == nil {
+			templ_7745c5c3_Var2 = templ.NopComponent
+		}
+		ctx = templ.ClearChildren(ctx)
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<style>\r\n        .form-container-post {\r\n            margin-top: 20px;\r\n        }\r\n        .hidden {\r\n            display: none;\r\n        }\r\n    </style><div id=\"form-container-post\" class=\"hidden\"><form id=\"post-form\"><div><h4>Post</h4><label for=\"tag\">Tag:</label> <input type=\"text\" id=\"post-tag\" name=\"tag\" required> <label for=\"content\">Content:</label> <textarea id=\"post-content\" name=\"content\" required></textarea></div><div><button type=\"button\" onclick=\"sendPost()\">Zapisz post</button></div></form><script>\r\n            function sendPost() {\r\n            var ftags = document.getElementById(\"post-tag\").value\r\n            var fcontent = document.getElementById(\"post-content\").value\r\n\r\n            let post = {\r\n                tags: ftags,\r\n                content: fcontent\r\n            }\r\n\r\n            let jsonString = JSON.stringify(post);\r\n            \r\n            fetch('http://localhost:1000/post/0', {\r\n                method: 'POST',\r\n                headers: {\r\n                    'Content-Type': 'application/json'\r\n                },\r\n                body: jsonString\r\n            })\r\n            .then(response => response.json())\r\n            .then(data => console.log('Success:', data))\r\n            .catch(error => console.error('Error:', error));\r\n        }\r\n        </script></div>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		if !templ_7745c5c3_IsBuffer {
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteTo(templ_7745c5c3_W)
+		}
+		return templ_7745c5c3_Err
+	})
+}
+
+func ShowProfile(user string) templ.Component {
+	return templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
+		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templ_7745c5c3_W.(*bytes.Buffer)
+		if !templ_7745c5c3_IsBuffer {
+			templ_7745c5c3_Buffer = templ.GetBuffer()
+			defer templ.ReleaseBuffer(templ_7745c5c3_Buffer)
+		}
+		ctx = templ.InitializeContext(ctx)
+		templ_7745c5c3_Var3 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var3 == nil {
+			templ_7745c5c3_Var3 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<!doctype html><html lang=\"en\"><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><link rel=\"stylesheet\" href=\"https://cdn.simplecss.org/simple.min.css\"><title>Board</title></head><body><header><h1>Board</h1><hr>")
@@ -35,16 +83,32 @@ func ShowProfile(user string) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var2 string
-		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(user)
+		var templ_7745c5c3_Var4 string
+		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(user)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views\profile.templ`, Line: 19, Col: 28}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views\profile.templ`, Line: 139, Col: 24}
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</p><section><h3>🔧 Ustawienia 🔨</h3><div><button>Zmień dane 🤔\r</button></div></section></main></body></html>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</p><section><div style=\"display: inline-block;\"><h3>🔧 Ustawienia 🔨</h3><button onclick=\"showForm()\">Zmień dane 🤔\r</button></div>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = ChangeForm().Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</section><section><div style=\"display: inline-block;\"><h3><h3>✍️ Dodaj post ✏</h3></h3><button onclick=\"showPostForm()\">Dodaj Post 📝\r</button></div>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = CreatePostForm().Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</section></main><script>\r\n        function showForm() {\r\n            var formContainer = document.getElementById('form-container');\r\n            formContainer.classList.toggle('hidden');\r\n        }\r\n        function showPostForm() {\r\n            var formContainer = document.getElementById('form-container-post');\r\n            formContainer.classList.toggle('hidden');\r\n        }\r\n    </script></body></html>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

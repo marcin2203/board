@@ -5,10 +5,12 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"main/views"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/gorilla/mux"
@@ -30,9 +32,12 @@ func sendMainPage(w http.ResponseWriter, r *http.Request) {
 func sendProfilePage(w http.ResponseWriter, r *http.Request) {
 	if !isLoged(r) {
 		sendLoginError(w, r)
-	} else {
-		views.ShowProfile("Tomek").Render(context.TODO(), w)
+		return
 	}
+	c, _ := r.Cookie("Authorization")
+	claims := decriptJWT(c.Value[7:])
+	views.ShowProfile(claims.Email).Render(context.TODO(), w)
+
 }
 func sendTagPage(w http.ResponseWriter, r *http.Request) {
 
@@ -124,9 +129,81 @@ func sendFullPost(w http.ResponseWriter, r *http.Request, content string, author
 	views.ShowFullPost(content, author).Render(context.TODO(), w)
 }
 func UserRouter(w http.ResponseWriter, r *http.Request) {
-
+	fmt.Println("USER")
+	switch r.Method {
+	case http.MethodPost:
+		updateUser(w, r)
+	}
 }
 
+type Changes struct {
+	Credentials string `json:"credentials"`
+	Target      string `json:"target"`
+}
+
+func updateUser(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("UPDATE")
+	body := r.Body
+	defer body.Close()
+	data, err := io.ReadAll(body)
+	if err != nil {
+		fmt.Println(err)
+	}
+	var change Changes
+	json.Unmarshal(data, &change)
+	fmt.Println(change.Target)
+	fmt.Println(change.Credentials)
+
+	db := getConnection()
+	defer db.Close()
+
+	if strings.Compare(change.Target, "email") == 0 {
+		stmt, err := db.Prepare("update userdata set email = $1 where email = $2;")
+		if err != nil {
+			fmt.Println(err)
+		}
+		defer stmt.Close()
+
+		c, err := r.Cookie("Authorization")
+		fmt.Println("cookie: ", c.Value)
+		claims := decriptJWT(c.Value[7:])
+		_, err = stmt.Exec(change.Credentials, claims.Email)
+		if err != nil {
+			fmt.Println(err)
+		}
+	}
+	if strings.Compare(change.Target, "password") == 0 {
+		stmt, err := db.Prepare("update userdata set password = $1 where email = $2;")
+		if err != nil {
+			fmt.Println(err)
+		}
+		defer stmt.Close()
+
+		c, err := r.Cookie("Authorization")
+		fmt.Println("cookie: ", c.Value)
+		claims := decriptJWT(c.Value[7:])
+		_, err = stmt.Exec(encryptPasswordSHA256(change.Credentials), claims.Email)
+		if err != nil {
+			fmt.Println(err)
+		}
+	}
+	if strings.Compare(change.Target, "nickname") == 0 {
+		stmt, err := db.Prepare("update userdata set nickname = $1 where email = $2;")
+		if err != nil {
+			fmt.Println(err)
+		}
+		defer stmt.Close()
+
+		c, err := r.Cookie("Authorization")
+		fmt.Println("cookie: ", c.Value)
+		claims := decriptJWT(c.Value[7:])
+		_, err = stmt.Exec(change.Credentials, claims.Email)
+		if err != nil {
+			fmt.Println(err)
+		}
+	}
+
+}
 func login(w http.ResponseWriter, r *http.Request) {
 	db := getConnection()
 	defer db.Close()
@@ -197,7 +274,10 @@ func register(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "http://localhost:1000/main-page", http.StatusSeeOther)
 }
 func isLoged(r *http.Request) bool {
-	c, _ := r.Cookie("Authorization")
+	c, err := r.Cookie("Authorization")
+	if err != nil {
+		return false
+	}
 	if strings.Compare(c.Value[0:7], "Bearer ") != 0 {
 		return false
 	}
@@ -213,8 +293,12 @@ func post(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		getPost(w, r)
+	case http.MethodPost:
+		createPost(w, r)
 	}
+
 }
+
 func getPost(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("getPost")
 	vars := mux.Vars(r)
@@ -246,4 +330,206 @@ func getPost(w http.ResponseWriter, r *http.Request) {
 	var nickname string
 	stmt.QueryRow(id).Scan(&nickname)
 	sendFullPost(w, r, content, nickname)
+}
+
+type JSONData struct {
+	Tags    string `json:"tags"`
+	Content string `json:"content"`
+}
+
+func createPost(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("POST post")
+	body := r.Body
+	defer body.Close()
+
+	data, err := io.ReadAll(body)
+	if err != nil {
+		fmt.Println("Błąd odczytu danych z ciała żądania:", err)
+		return
+	}
+
+	var jsondata JSONData
+
+	json.Unmarshal([]byte(string(data)), &jsondata)
+
+	// input post
+	db := getConnection()
+	defer db.Close()
+	stmt, err := db.Prepare("INSERT INTO post (author, text) VALUES ($1, $2);")
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer stmt.Close()
+
+	//get author and content
+	if err != nil {
+		fmt.Println(err)
+	}
+	result, err := stmt.Exec(getUserDBID(w, r), jsondata.Content)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println("result from post insert: ", result)
+
+	// get id of created post
+	var cratedPostID int
+	stmt, err = db.Prepare("SELECT id FROM post ORDER BY id DESC LIMIT 1;")
+	if err != nil {
+		fmt.Println(err)
+	}
+	err = stmt.QueryRow().Scan(&cratedPostID)
+	if err != nil {
+		fmt.Println(err)
+	}
+	// input tags
+	stmt, err = db.Prepare("select name from tag;")
+	if err != nil {
+		fmt.Println(err)
+	}
+	rows, err := stmt.Query()
+	if err != nil {
+		fmt.Println(err)
+	}
+	var temptag string
+	var sqltags []string
+	for rows.Next() {
+		rows.Scan(&temptag)
+		sqltags = append(sqltags, temptag)
+	}
+
+	fmt.Println(sqltags)
+	tags := strings.Split(jsondata.Tags, " ")
+	fmt.Println(tags)
+	var newTags []string
+	for _, tag := range tags {
+		if !contains(sqltags, tag) {
+			// Jeśli tak, dodaj tag do newTags
+			newTags = append(newTags, tag)
+		}
+	}
+	fmt.Println("TUTAJ")
+	fmt.Println("tagi ktorych nie ma: ", newTags)
+	for _, tag := range newTags {
+		stmt, err = db.Prepare("INSERT INTO tag (name) VALUES ($1);")
+		if err != nil {
+			fmt.Println(err)
+		}
+		stmt.Exec(tag)
+		stmt, err = db.Prepare("select id from tag order by id desc limit 1;")
+		if err != nil {
+			fmt.Println(err)
+		}
+		var cratedTagID int
+		err = stmt.QueryRow().Scan(&cratedTagID)
+		if err != nil {
+			fmt.Println(err)
+		}
+		stmt, err = db.Prepare("INSERT INTO tagposts(tag, posts) VALUES ($1, '[0]');")
+		if err != nil {
+			fmt.Println(err)
+		}
+		_, err = stmt.Exec(cratedTagID)
+		fmt.Println(err)
+	}
+	fmt.Println("tutaj")
+	// get tags' ids from
+	var posts string
+	for _, tag := range tags {
+		tagid := getTagDBID(tag)
+		stmt, err = db.Prepare("select posts from tagposts where tag = $1;")
+		err = stmt.QueryRow(tagid).Scan(&posts)
+		fmt.Println(err, posts, cratedPostID)
+		new := posts[:len(posts)-1] + ", " + strconv.Itoa(cratedPostID) + "]"
+		fmt.Println(new)
+		stmt, err = db.Prepare("UPDATE tagposts set posts = $1 where tag = $2;")
+		_, err = stmt.Exec(new, tagid)
+	}
+
+}
+func contains(sqltags []string, tag string) bool {
+	for _, t := range sqltags {
+		if t == tag {
+			return true
+		}
+	}
+	return false
+}
+func getUserDBID(w http.ResponseWriter, r *http.Request) int {
+	c, err := r.Cookie("Authorization")
+	fmt.Println("cookie: ", c.Value)
+	claims := decriptJWT(c.Value[7:])
+	db := getConnection()
+	defer db.Close()
+	stmt, err := db.Prepare("select id from userdata where email=$1;")
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer stmt.Close()
+
+	var id int
+	stmt.QueryRow(claims.Email).Scan(&id)
+	fmt.Println("getUserDBID: ", id)
+
+	return id
+}
+func getTagDBID(name string) int {
+	db := getConnection()
+	defer db.Close()
+	stmt, err := db.Prepare("select id from tag where name=$1;")
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer stmt.Close()
+
+	var id int
+	stmt.QueryRow(name).Scan(&id)
+	fmt.Println("getTagDBID: ", id)
+
+	return id
+}
+func getTags(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("/tags")
+	db := getConnection()
+	defer db.Close()
+
+	stmt, err := db.Prepare("select name from tag")
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer stmt.Close()
+
+	var tag string
+	rows, err := stmt.Query()
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	search := r.FormValue("search")
+
+	fmt.Println(search)
+
+	for rows.Next() {
+		rows.Scan(&tag)
+		if strings.Contains(tag, search) {
+			w.Write([]byte("<td> <a href=/tag/" + tag + ">" + tag + "</a> </td>"))
+		}
+	}
+}
+
+func debug(w http.ResponseWriter, r *http.Request) {
+
+	body := r.Body
+	defer body.Close()
+
+	// Przykładowe wykorzystanie ciała żądania (np. odczytanie danych)
+	// Możesz użyć ioutil.ReadAll lub innych metod do odczytu danych z ciała
+	// W tym przykładzie używamy ioutil.ReadAll
+	data, err := io.ReadAll(body)
+	if err != nil {
+		fmt.Println("Błąd odczytu danych z ciała żądania:", err)
+		return
+	}
+
+	fmt.Println("Dane z ciała żądania:", string(data))
+
 }

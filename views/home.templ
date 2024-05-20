@@ -3,7 +3,7 @@ package views
 templ Nav(){
     <nav style="padding: 0 0rem 0rem;">
     <a href="/main-page">Home</a>
-    <a href="/tag">Tags</a>
+    <a href="/tag/main">Tags</a>
     <a href="/profile">Profile</a>
     <a href="/info">Info</a>
     </nav>
@@ -13,17 +13,12 @@ templ SearchBar(){
 <div>
         <input class="form-control" type="search"
             name="search" placeholder="Type tags you are intrested..."
-            hx-post="/"
+            hx-post="/tags"
             hx-trigger="input changed delay:500ms, search"
             hx-target="#search-results"
             hx-indicator=".htmx-indicator"
             style="width: 600px;"></input>
         <table class="table">
-            <thead>
-            <tr>
-                <th>tags</th>
-            </tr>
-            </thead>
             <tbody id="search-results">
             </tbody>
         </table>

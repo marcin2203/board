@@ -23,7 +23,7 @@ func Nav() templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<nav style=\"padding: 0 0rem 0rem;\"><a href=\"/main-page\">Home</a> <a href=\"/tag\">Tags</a> <a href=\"/profile\">Profile</a> <a href=\"/info\">Info</a></nav>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<nav style=\"padding: 0 0rem 0rem;\"><a href=\"/main-page\">Home</a> <a href=\"/tag/main\">Tags</a> <a href=\"/profile\">Profile</a> <a href=\"/info\">Info</a></nav>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -47,7 +47,7 @@ func SearchBar() templ.Component {
 			templ_7745c5c3_Var2 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div><input class=\"form-control\" type=\"search\" name=\"search\" placeholder=\"Type tags you are intrested...\" hx-post=\"/\" hx-trigger=\"input changed delay:500ms, search\" hx-target=\"#search-results\" hx-indicator=\".htmx-indicator\" style=\"width: 600px;\"><table class=\"table\"><thead><tr><th>tags</th></tr></thead> <tbody id=\"search-results\"></tbody></table></div>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div><input class=\"form-control\" type=\"search\" name=\"search\" placeholder=\"Type tags you are intrested...\" hx-post=\"/tags\" hx-trigger=\"input changed delay:500ms, search\" hx-target=\"#search-results\" hx-indicator=\".htmx-indicator\" style=\"width: 600px;\"><table class=\"table\"><tbody id=\"search-results\"></tbody></table></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

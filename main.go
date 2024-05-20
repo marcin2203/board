@@ -28,9 +28,10 @@ func main() {
 	r.HandleFunc("/post/{id}", post)
 	r.HandleFunc("/login", login)
 	r.HandleFunc("/register", register)
-
-	r.HandleFunc("/debug", sendDebug)
-
+	r.HandleFunc("/tags", getTags)
+	r.HandleFunc("/user", UserRouter)
+	r.HandleFunc("/debug/page", sendDebug)
+	r.HandleFunc("/debug/contents", debug)
 	log.Fatal(srv.ListenAndServe())
 
 }
