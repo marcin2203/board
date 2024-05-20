@@ -125,8 +125,8 @@ func sendCatImg(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "image/png")
 	w.Write(img)
 }
-func sendFullPost(w http.ResponseWriter, r *http.Request, content string, author string) {
-	views.ShowFullPost(content, author).Render(context.TODO(), w)
+func sendFullPost(w http.ResponseWriter, r *http.Request, content string, author string, comcontent []string, comauthor []string) {
+	views.ShowFullPost(content, author, comcontent, comauthor).Render(context.TODO(), w)
 }
 func UserRouter(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("USER")
@@ -329,7 +329,33 @@ func getPost(w http.ResponseWriter, r *http.Request) {
 	}
 	var nickname string
 	stmt.QueryRow(id).Scan(&nickname)
-	sendFullPost(w, r, content, nickname)
+
+	// komentarze
+
+	stmt, err = db.Prepare("select comments from postcomments where postid = $1;")
+	if err != nil {
+		fmt.Println(err)
+	}
+	var sqlids string
+	var comids []int
+	stmt.QueryRow(id).Scan(&sqlids)
+
+	json.Unmarshal([]byte(sqlids), &comids)
+
+	var com string
+	var comments []string
+	for _, id := range comids {
+		fmt.Println("comids: ", id)
+		stmt, err = db.Prepare("select text from comment where id = $1;")
+		if err != nil {
+			fmt.Println(err)
+		}
+		stmt.QueryRow(id).Scan(&com)
+		fmt.Println("com: ", com)
+		comments = append(comments, com)
+	}
+	fmt.Println("Coms: ", comments, comids, sqlids)
+	sendFullPost(w, r, content, nickname, comments, []string{"s", "p"})
 }
 
 type JSONData struct {

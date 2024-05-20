@@ -25,7 +25,7 @@ func CreateTagPost(url string, author string, content string) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<style>\r\n    section {\r\n        transition: background-color 0.3s ease; /* Dodaj płynny efekt zmiany koloru tła */\r\n    }\r\n    section:hover {\r\n        background-color: #f5f5f5;\r\n    }\r\n    </style><section><h2>This is a section</h2><p>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<style>\r\n    section {\r\n        transition: background-color 0.3s ease; /* Dodaj płynny efekt zmiany koloru tła */\r\n    }\r\n    section:hover {\r\n        background-color: #f5f5f5;\r\n    }\r\n    </style><section><h3>Post</h3><p>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -84,7 +84,7 @@ func CreateFullPost(content string, author string) templ.Component {
 			templ_7745c5c3_Var5 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<style>\r\n    section {\r\n        transition: background-color 0.3s ease; /* Dodaj płynny efekt zmiany koloru tła */\r\n    }\r\n    section:hover {\r\n        background-color: #f5f5f5;\r\n    }\r\n    </style><section><h2>This is a section</h2><p>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<style>\r\n    section {\r\n        transition: background-color 0.3s ease; /* Dodaj płynny efekt zmiany koloru tła */\r\n    }\r\n    section:hover {\r\n        background-color: #f5f5f5;\r\n    }\r\n    </style><section><h3>Post</h3><p>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -209,7 +209,7 @@ func tagposts(ids []int, authors []string, contents []string) templ.Component {
 	})
 }
 
-func ShowFullPost(content, author string) templ.Component {
+func ShowFullPost(content, author string, comcontetnts []string, comauthors []string) templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templ_7745c5c3_W.(*bytes.Buffer)
 		if !templ_7745c5c3_IsBuffer {
@@ -237,6 +237,16 @@ func ShowFullPost(content, author string) templ.Component {
 		templ_7745c5c3_Err = CreateFullPost(content, author).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<p>Komentarze 💬\r <button id=\"comFormBtn\" style=\"float: right;\" onclick=\"showComForm()\">➕</button><style>\r\n                .hidden {\r\n                    display: none;\r\n                }\r\n                .comment-container {\r\n                    display: flex;\r\n                    justify-content: space-between;\r\n                    align-items: center;\r\n                }\r\n            </style><form id=\"comForm\" class=\"hidden\"><label for=\"comment\">Kom</label> <textarea id=\"comment\" name=\"comment\" required></textarea> <button type=\"submit\">Submit</button></form></p><script>\r\n                function showComForm() {\r\n                    var formContainer = document.getElementById('comForm');\r\n                    formContainer.classList.toggle('hidden');\r\n                }\r\n            </script>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		for _, cont := range comcontetnts {
+			templ_7745c5c3_Err = CreateComment(cont, "admin").Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</main></body></html>")
 		if templ_7745c5c3_Err != nil {

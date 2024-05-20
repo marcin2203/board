@@ -11,7 +11,7 @@ templ CreateTagPost(url string, author string, content string){
     }
     </style>
     <section>
-        <h2>This is a section</h2>
+        <h3>Post</h3>
         <p>{ content }</p>
         <i style="color: gray">
             <span style="float: left;">autor: { author }</span>
@@ -29,7 +29,7 @@ templ CreateFullPost(content string, author string){
     }
     </style>
     <section>
-        <h2>This is a section</h2>
+        <h3>Post</h3>
         <p>{ content }</p>
         <i style="color: gray">
             <span style="float: left;">autor: { author }</span>
@@ -55,7 +55,7 @@ templ tagposts(ids []int, authors []string, contents []string){
     </div>
 }
 
-templ ShowFullPost(content, author string){
+templ ShowFullPost(content, author string, comcontetnts []string, comauthors []string) {
     <!DOCTYPE html>
     <html lang="en">
     <head>
@@ -73,6 +73,33 @@ templ ShowFullPost(content, author string){
         </header>
         <main>
             @CreateFullPost(content, author)
+            <p>Komentarze 💬
+            <button id="comFormBtn" style="float: right;" onclick="showComForm()">➕</button>
+            <style>
+                .hidden {
+                    display: none;
+                }
+                .comment-container {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                }
+            </style>
+            <form id="comForm" class="hidden">
+                <label for="comment">Kom</label>
+                <textarea id="comment" name="comment" required></textarea>
+                <button type="submit">Submit</button>
+            </form>
+            </p>
+            <script>
+                function showComForm() {
+                    var formContainer = document.getElementById('comForm');
+                    formContainer.classList.toggle('hidden');
+                }
+            </script>
+            for _, cont := range comcontetnts {
+                @CreateComment( cont, "admin")
+            }
         </main>
         
     </body>
