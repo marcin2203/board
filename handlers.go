@@ -344,18 +344,22 @@ func getPost(w http.ResponseWriter, r *http.Request) {
 
 	var com string
 	var comments []string
+	var sqlauthor string
+	var sqlauthors []string
 	for _, id := range comids {
 		fmt.Println("comids: ", id)
-		stmt, err = db.Prepare("select text from comment where id = $1;")
+		stmt, err = db.Prepare("select userdata.nickname, comment.text  from comment join userdata on comment.author = userdata.id where comment.id = $1;")
 		if err != nil {
 			fmt.Println(err)
 		}
-		stmt.QueryRow(id).Scan(&com)
-		fmt.Println("com: ", com)
+		stmt.QueryRow(id).Scan(&sqlauthor, &com)
+		fmt.Println("com: ", com, "sqlauthor: ", sqlauthor)
 		comments = append(comments, com)
+		sqlauthors = append(sqlauthors, sqlauthor)
 	}
+
 	fmt.Println("Coms: ", comments, comids, sqlids)
-	sendFullPost(w, r, content, nickname, comments, []string{"s", "p"})
+	sendFullPost(w, r, content, nickname, comments, sqlauthors)
 }
 
 type JSONData struct {
@@ -541,7 +545,120 @@ func getTags(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 }
+func commentRouter(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("commentRouter")
+	switch r.Method {
+	case http.MethodPost:
+		createComment(w, r)
+	}
+}
 
+type JSONComment struct {
+	PostId  int    `json:"postId"`
+	Comment string `json:"comment"`
+}
+
+func createComment(w http.ResponseWriter, r *http.Request) {
+	body := r.Body
+	defer body.Close()
+
+	// Przykładowe wykorzystanie ciała żądania (np. odczytanie danych)
+	// Możesz użyć ioutil.ReadAll lub innych metod do odczytu danych z ciała
+	// W tym przykładzie używamy ioutil.ReadAll
+	data, err := io.ReadAll(body)
+	if err != nil {
+		fmt.Println("Błąd odczytu danych z ciała żądania:", err)
+		return
+	}
+	var content JSONComment
+	err = json.Unmarshal([]byte(string(data)), &content)
+	fmt.Println(string(data), content)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	db := getConnection()
+	defer db.Close()
+
+	stmt, err := db.Prepare("insert into comment(author, text) values ($1, $2);")
+	if err != nil {
+		fmt.Println(err)
+	}
+	_, err = stmt.Exec(getUserDBID(w, r), content.Comment)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	stmt, err = db.Prepare("select postid from postcomments;")
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.Query()
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer rows.Close()
+
+	var sqlids []int
+	var sqlid int
+	for rows.Next() {
+		rows.Scan(&sqlid)
+		sqlids = append(sqlids, sqlid)
+	}
+	// is id in db(postcomments)
+	fmt.Println(sqlids, content.PostId)
+	found := false
+	for _, tag := range sqlids {
+		if tag == content.PostId {
+			found = true
+		}
+	}
+	if !found {
+		stmt, err = db.Prepare("INSERT INTO postcomments (postid, comments) VALUES ($1, $2);")
+		if err != nil {
+			fmt.Println(err)
+		}
+		_, err = stmt.Exec(content.PostId, "[0]")
+		if err != nil {
+			fmt.Println(err)
+		}
+	}
+	// take comments
+	var comments string
+	stmt, err = db.Prepare("select comments from postcomments where postid=$1;")
+	if err != nil {
+		fmt.Println(err)
+	}
+	err = stmt.QueryRow(content.PostId).Scan(&comments)
+	fmt.Println(err, comments)
+
+	var cratedCommentID int
+	stmt, err = db.Prepare("SELECT id FROM comment ORDER BY id DESC LIMIT 1;")
+	if err != nil {
+		fmt.Println(err)
+	}
+	err = stmt.QueryRow().Scan(&cratedCommentID)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	//dubug
+	newcomments := comments[:len(comments)-1] + ", " + strconv.Itoa(cratedCommentID) + "]"
+	fmt.Println(newcomments)
+
+	stmt, err = db.Prepare("update postcomments set comments = $1 where postid= $2;")
+	if err != nil {
+		fmt.Println(err)
+	}
+	_, err = stmt.Exec(newcomments, content.PostId)
+	if err != nil {
+		fmt.Println(err)
+	}
+	// insert new val into comments and insert
+
+}
 func debug(w http.ResponseWriter, r *http.Request) {
 
 	body := r.Body

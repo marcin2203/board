@@ -22,7 +22,9 @@ CREATE TABLE IF NOT EXISTS tag (
 
 CREATE TABLE IF NOT EXISTS comment (
     id SERIAL PRIMARY KEY,
-    text VARCHAR(500) NOT NULL
+    author INT,
+    text VARCHAR(500) NOT NULL,
+    FOREIGN KEY (author) REFERENCES userdata(id)
 );
 
 CREATE TABLE IF NOT EXISTS tagposts (
@@ -93,9 +95,9 @@ INSERT INTO tagposts (tag, posts) VALUES
 INSERT INTO profileposts (userid, posts) VALUES 
     (1, '[1, 2, 3]');
 
-INSERT INTO comment (text) VALUES 
-    ('Słabe 😒'),
-    ('Lepiej się nie dało??? 😡');
+INSERT INTO comment (text, author) VALUES 
+    ('Słabe 😒', 1),
+    ('Lepiej się nie dało??? 😡', 1);
 
 INSERT INTO postcomments (postid, comments) VALUES 
     (1, '[1, 2]'),

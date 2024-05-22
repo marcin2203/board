@@ -88,7 +88,7 @@ templ ShowFullPost(content, author string, comcontetnts []string, comauthors []s
             <form id="comForm" class="hidden">
                 <label for="comment">Kom</label>
                 <textarea id="comment" name="comment" required></textarea>
-                <button type="submit">Submit</button>
+                <button type="button" onclick="sendComment()">Send</button>
             </form>
             </p>
             <script>
@@ -96,12 +96,37 @@ templ ShowFullPost(content, author string, comcontetnts []string, comauthors []s
                     var formContainer = document.getElementById('comForm');
                     formContainer.classList.toggle('hidden');
                 }
+                function sendComment() {
+                    var comment = document.getElementById("comment").value;
+                    console.log(comment);
+
+                    // Wyciąganie identyfikatora posta z URL
+                    var url = window.location.href;
+                    var postIdString = url.split('/').pop();
+                    var postId = parseInt(postIdString, 10); 
+                    var com = {
+                        comment: comment,
+                        postId: postId  // Dodanie identyfikatora posta do obiektu
+                    };
+
+                    var sendvars = JSON.stringify(com);
+
+                    fetch('http://localhost:1000/comment', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: sendvars
+                    })
+                    .then(response => response.json())
+                    .then(data => console.log('Success:', data))
+                    .catch(error => console.error('Error:', error));
+                }
             </script>
-            for _, cont := range comcontetnts {
-                @CreateComment( cont, "admin")
+            for i := range comauthors {
+                @CreateComment( comcontetnts[i], comauthors[i])
             }
         </main>
-        
     </body>
     </html>
 }

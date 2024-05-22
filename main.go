@@ -30,6 +30,7 @@ func main() {
 	r.HandleFunc("/register", register)
 	r.HandleFunc("/tags", getTags)
 	r.HandleFunc("/user", UserRouter)
+	r.HandleFunc("/comment", commentRouter)
 	r.HandleFunc("/debug/page", sendDebug)
 	r.HandleFunc("/debug/contents", debug)
 	log.Fatal(srv.ListenAndServe())
