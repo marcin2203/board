@@ -11,7 +11,7 @@ import (
 	_ "github.com/lib/pq"
 )
 
-func main() {
+func Main() {
 
 	r := mux.NewRouter()
 	srv := &http.Server{
