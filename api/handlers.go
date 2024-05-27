@@ -1,13 +1,13 @@
-package main
+package handler
 
 import (
 	"context"
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"handler/views"
 	"io"
 	"log"
-	"main/views"
 	"net/http"
 	"os"
 	"strconv"
