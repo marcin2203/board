@@ -1,38 +1,69 @@
 package main
 
 import (
-	"log"
+	"fmt"
 	"net/http"
-	"time"
 
-	"github.com/gorilla/mux"
-	_ "github.com/lib/pq"
+	. "github.com/tbxark/g4vercel"
 )
 
-func Main() {
+func Handler(w http.ResponseWriter, r *http.Request) {
+	server := New()
+	server.Use(Recovery(func(err interface{}, c *Context) {
+		if httpError, ok := err.(HttpError); ok {
+			c.JSON(httpError.Status, H{
+				"message": httpError.Error(),
+			})
+		} else {
+			message := fmt.Sprintf("%s", err)
+			c.JSON(500, H{
+				"message": message,
+			})
+		}
+	}))
 
-	r := mux.NewRouter()
-	srv := &http.Server{
-		Handler:      r,
-		Addr:         ":1000",
-		WriteTimeout: 1 * time.Second,
-		ReadTimeout:  1 * time.Second,
-	}
+	// Define route handlers
+	server.GET("/main-page", func(c *Context) {
+		SendMainPage(c.Writer, c.Req)
+	})
+	server.GET("/profile", func(c *Context) {
+		SendProfilePage(c.Writer, c.Req)
+	})
+	server.GET("/tag/:tag", func(c *Context) {
+		SendTagPage(c.Writer, c.Req)
+	})
+	server.GET("/info", func(c *Context) {
+		SendInfoPage(c.Writer, c.Req)
+	})
+	server.GET("/img", func(c *Context) {
+		SendCatImg(c.Writer, c.Req)
+	})
 
-	r.HandleFunc("/main-page", SendMainPage)
-	r.HandleFunc("/profile", SendProfilePage)
-	r.HandleFunc("/tag/{tag}", SendTagPage)
-	r.HandleFunc("/info", SendInfoPage)
-	r.HandleFunc("/img", SendCatImg)
+	server.POST("/post/:id", func(c *Context) {
+		Post(c.Writer, c.Req)
+	})
+	server.POST("/login", func(c *Context) {
+		Login(c.Writer, c.Req)
+	})
+	server.POST("/register", func(c *Context) {
+		Register(c.Writer, c.Req)
+	})
+	server.GET("/tags", func(c *Context) {
+		GetTags(c.Writer, c.Req)
+	})
+	server.GET("/user", func(c *Context) {
+		UserRouter(c.Writer, c.Req)
+	})
+	server.POST("/comment", func(c *Context) {
+		CommentRouter(c.Writer, c.Req)
+	})
+	server.GET("/debug/page", func(c *Context) {
+		SendDebug(c.Writer, c.Req)
+	})
+	server.GET("/debug/contents", func(c *Context) {
+		Debug(c.Writer, c.Req)
+	})
 
-	r.HandleFunc("/post/{id}", Post)
-	r.HandleFunc("/login", Login)
-	r.HandleFunc("/register", Register)
-	r.HandleFunc("/tags", GetTags)
-	r.HandleFunc("/user", UserRouter)
-	r.HandleFunc("/comment", CommentRouter)
-	r.HandleFunc("/debug/page", SendDebug)
-	r.HandleFunc("/debug/contents", Debug)
-	log.Fatal(srv.ListenAndServe())
-
+	// Handle the request
+	server.Handle(w, r)
 }
